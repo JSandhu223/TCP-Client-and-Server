@@ -1,0 +1,4 @@
+test
+*.json
+/client/client
+/server/server
