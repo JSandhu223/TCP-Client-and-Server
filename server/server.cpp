@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
@@ -149,28 +152,67 @@ int main(int argc, char **argv)
         // Read the file and send to client
         if (authenticated)
         {
-            char filename[100] = "data.txt";
-            char all_lines[100];
-            // Open the file in read-only mode
-            FILE *file = fopen(filename, "r");
+            // Open the file
+            std::ifstream file("data.txt");
 
-            if (file == NULL)
+            std::string line;
+            std::vector<std::string> all_lines;
+            int n = 0;
+            // Read the lines
+            while (std::getline(file, line))
             {
-                printf("Failed to open file %s\n", filename);
-                exit(1);
+                n++;
+                all_lines.push_back(line);
             }
+            std::cout << "Number of lines in file: " << n << std::endl;
+            // Convert the number of lines to a C-string
+            std::string m = std::to_string(n);
+            std::cout << "Number of lines as C++ string: " << m << std::endl;
 
-            while (fread(all_lines, 1, sizeof(all_lines), file) > 0)
+            char *num_lines = new char(m.length() + 1);
+            int i = 0;
+            for (char c : m)
             {
-                status = send(socket2, all_lines, strlen(all_lines), 0);
+                num_lines[i] = c;
+                i++;
+            }
+            num_lines[i] = '\0';
+            printf("Number of lines as C string: %s\n", num_lines);
+
+            // Now send this "number" to the client
+            status = send(socket2, num_lines, strlen(num_lines) + 1, 0);
+            if (status == -1)
+            {
+                printf("server: failed to send number of lines in file\n");
+                return 8;
+            }
+            printf("Succesfully sent number of lines in file to client\n");
+
+            // Free memory
+            delete[] num_lines;
+
+            // Now send each line in the vector to the client, element by element
+            for (std::string s : all_lines)
+            {
+                int i = 0;
+                char* line_to_send = new char(s.length()+1);
+                for (char c : m)
+                {
+                    line_to_send[i] = c;
+                    i++;
+                }
+                line_to_send[i] = '\0';
+
+                status = send(socket2, line_to_send, strlen(line_to_send)+1, 0);
                 if (status == -1)
                 {
-                    printf("server: failed to send file info\n");
-                    return 8;
+                    printf("server: failed to send line to client\n");
+                    return 9;
                 }
-                printf("\nSuccessfully sent file info to client:\n%s\n", all_lines);
-                printf("Size of data sent: %ld\n", strlen(all_lines));
+                printf("Successfully sent line to client\n");
             }
+
+            file.close();
         }
 
         // Close the second socket

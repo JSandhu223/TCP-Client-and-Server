@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <fstream>
+#include <string>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
@@ -106,25 +108,44 @@ int main(int argc, char** argv)
         return 5;
     }
     std::cout << "Sending PASSCODE..." << std::endl;
+    printf("\n");
 
+    // Receive the number of lines
+    char received_lines[100];
+    status = recv(sock, received_lines, sizeof(received_lines), 0);
+    if (status == -1)
+    {
+        printf("client: failed to receive number of lines in file\n");
+        return 6;
+    }
+    int num_lines = atoi(received_lines);
+    printf("Number of lines in file received: %d\n", num_lines);
+    printf("\n");
 
     // Receive file data and write to output file
     char received_data[100];
-    FILE* output_file = fopen("output.txt", "w");
+    std::ofstream file("output.txt");
 
-    status = recv(sock, received_data, sizeof(received_data), 0);
-    if (status == -1)
+    // Loop for num_lines amount of times
+    int i = 1;
+    while (i <= num_lines)
     {
-        printf("client: Failed to receive file data from server\n");
-        return 6;
+        // Receive line of data from file
+        status = recv(sock, received_data, sizeof(received_data), 0);
+        if (status == -1)
+        {
+            printf("client: failed to line %d from server file\n", i);
+            return 7;
+        }
+        
+        printf("Received line %d: %s\n", i, received_data);
+        printf("Size of data received: %d\n", status);
+
+        i++;
     }
 
-    printf("Size of data received: %d\n", status);
-    printf("Received: %s\n", received_data);
-    fwrite(received_data, 1, status, output_file);
-
-
-    fclose(output_file);
+    // Close the file
+    file.close();
 
     close(sock);
 
