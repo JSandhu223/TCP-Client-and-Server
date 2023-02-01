@@ -109,7 +109,7 @@ int main(int argc, char** argv)
 
 
     // Receive file data and write to output file
-    char received_data[100];
+    char received_data[1024];
     FILE* output_file = fopen("output.txt", "w");
 
     status = recv(sock, received_data, sizeof(received_data), 0);
@@ -119,10 +119,20 @@ int main(int argc, char** argv)
         return 6;
     }
 
-    printf("Size of data received: %d\n", status);
-    printf("Received: %s\n", received_data);
-    fwrite(received_data, 1, status, output_file);
+    while (1)
+    {
+        status = recv(sock, received_data, sizeof(received_data), 0);
+        if (status == -1)
+        {
+            printf("client: failed to receive line of file data\n");
+            return 7;
+        }
 
+        printf("Received file data: %s\n", received_data);
+
+        if (received_data[0] == '\0' && received_data[1] == '\0')
+            break;
+    }
 
     fclose(output_file);
 

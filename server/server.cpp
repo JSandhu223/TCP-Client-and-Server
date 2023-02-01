@@ -150,7 +150,7 @@ int main(int argc, char **argv)
         if (authenticated)
         {
             char filename[100] = "data.txt";
-            char all_lines[100];
+            char line[1024];
             // Open the file in read-only mode
             FILE *file = fopen(filename, "r");
 
@@ -160,17 +160,31 @@ int main(int argc, char **argv)
                 exit(1);
             }
 
-            while (fread(all_lines, 1, sizeof(all_lines), file) > 0)
+            while (fgets(line, sizeof(line), file) != NULL)
             {
-                status = send(socket2, all_lines, strlen(all_lines), 0);
+                if (feof(file))
+                {
+                    char terminate[2] = {'\0', '\0'};
+                    status = send(socket2, terminate, 2, 0);
+                    if (status == -1)
+                    {
+                        printf("client: failed to send EOF terminate signal to client\n");
+                        return 8;
+                    }
+                    break;
+                }
+                
+                status = send(socket2, line, strlen(line)+1, 0);
                 if (status == -1)
                 {
                     printf("server: failed to send file info\n");
-                    return 8;
+                    return 9;
                 }
-                printf("\nSuccessfully sent file info to client:\n%s\n", all_lines);
-                printf("Size of data sent: %ld\n", strlen(all_lines));
+                printf("\nSuccessfully sent file info to client:\n%s\n", line);
+                printf("Size of data sent: %ld\n", strlen(line));
             }
+
+            fclose(file);
         }
 
         // Close the second socket
