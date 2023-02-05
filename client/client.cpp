@@ -104,7 +104,7 @@ int main(int argc, char** argv)
 
 
     // Receive file data and write to output file
-    char received_data[100];
+    char received_data[2048];
     FILE* output_file = fopen("output.txt", "w");
 
     status = recv(sock, received_data, sizeof(received_data), 0);
