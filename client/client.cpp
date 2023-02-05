@@ -64,11 +64,6 @@ int main(int argc, char** argv)
     printf("Message length: %ld\n", ucid_length);
     ucid[ucid_length-1] = '\0'; // Set the null terminator just to be safe ;)
 
-    // if (strcmp(ucid, "q!") == 0)
-    // {
-    //     close(sock);
-    //     exit(0);
-    // }
     
     // Send the UCID to the server
     status = send(sock, ucid, strlen(ucid)+1, 0);
@@ -77,6 +72,13 @@ int main(int argc, char** argv)
         printf("Client: failed to send");
         return 3;
     }
+
+    if (strcmp(ucid, "q!") == 0)
+    {
+        close(sock);
+        exit(0);
+    }
+
     std::cout << "Return value of send(): " << status << std::endl;
 
     std::cout << "Size of UCID message sent: " << strlen(ucid) << std::endl << std::endl;

@@ -93,6 +93,7 @@ int main(int argc, char **argv)
         {
             printf("Server shutting down...\n");
             // break;
+            close(socket2);
             close(socket1);
             exit(0);
         }
