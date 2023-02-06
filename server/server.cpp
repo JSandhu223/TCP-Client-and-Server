@@ -165,6 +165,7 @@ int main(int argc, char **argv)
             // This is the file to read from
             std::ifstream file("data.txt");
 
+            int line_number = 1;
             // Read each line of the file, and store into the line variable
             while (std::getline(file, current_line))
             {
@@ -175,6 +176,9 @@ int main(int argc, char **argv)
                     printf("server: Failed to send line to client\n");
                     return 8;
                 }
+                std::cout << "Line " << line_number <<  " sent" << std::endl;
+                line_number++;
+
                 // Source: https://stackoverflow.com/questions/4184468/sleep-for-milliseconds
                 // Sleep for half a second after sending
                 std::this_thread::sleep_for(std::chrono::milliseconds(500));

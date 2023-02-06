@@ -114,6 +114,8 @@ int main(int argc, char **argv)
         status = recv(sock, file_data, sizeof(file_data), 0);
         if (status > 0)
         {
+            int n = strlen(file_data) + 1;
+            printf("%d Received from the Server!\n", n);
             std::string s(file_data);
             file << s;
         }
