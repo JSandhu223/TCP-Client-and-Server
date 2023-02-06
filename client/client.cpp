@@ -103,6 +103,7 @@ int main(int argc, char **argv)
         printf("client: failed to send PASSCODE\n");
         return 5;
     }
+    std::cout << "Client Passcode generated: " << client_passcode << std::endl;
     std::cout << "Sending PASSCODE..." << std::endl;
 
     // Receive file data and write to output file
