@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <fstream>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
@@ -105,20 +106,22 @@ int main(int argc, char **argv)
     std::cout << "Sending PASSCODE..." << std::endl;
 
     // Receive file data and write to output file
-    char received_data[2048];
-    FILE *output_file = fopen("output.txt", "w");
-
-    status = recv(sock, received_data, sizeof(received_data), 0);
-    if (status == -1)
+    std::ofstream file("output.txt");
+    char file_data[2048];
+    while (1)
     {
-        printf("client: Failed to receive file data from server\n");
-        return 6;
+        status = recv(sock, file_data, sizeof(file_data), 0);
+        if (status > 0)
+        {
+            std::string s(file_data);
+            file << s;
+        }
+        else
+        {
+            break;
+        }
+
     }
-
-    printf("Succesfully received file data from server: %s\n", received_data);
-    fwrite(received_data, 1, status, output_file);
-
-    fclose(output_file);
 
     close(sock);
 
