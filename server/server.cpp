@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <chrono>
+#include <thread>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
@@ -156,26 +160,28 @@ int main(int argc, char **argv)
         // Read the file and send to client
         if (authenticated)
         {
-            char filename[100] = "data.txt";
-            char all_lines[100];
-            // Open the file in read-only mode
-            FILE *file = fopen(filename, "r");
+            // This stores the data on the current line from the file
+            std::string current_line;
+            // This is the file to read from
+            std::ifstream file("data.txt");
 
-            if (file == NULL)
+            int line_number = 1;
+            // Read each line of the file, and store into the line variable
+            while (std::getline(file, current_line))
             {
-                printf("Failed to open file %s\n", filename);
-                exit(1);
-            }
-
-            while (fread(all_lines, 1, sizeof(all_lines), file) > 0)
-            {
-                status = send(socket2, all_lines, strlen(all_lines), 0);
+                const char* send_line = current_line.c_str();
+                status = send(socket2, send_line, strlen(send_line)+1, 0);
                 if (status == -1)
                 {
-                    printf("server: failed to send file info\n");
+                    printf("server: Failed to send line to client\n");
                     return 8;
                 }
-                printf("Successfully sent file info to client!\n");
+                std::cout << "Line " << line_number <<  " sent" << std::endl;
+                line_number++;
+
+                // Source: https://stackoverflow.com/questions/4184468/sleep-for-milliseconds
+                // Sleep for half a second after sending
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
             }
         }
 
